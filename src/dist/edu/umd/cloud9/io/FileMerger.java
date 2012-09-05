@@ -104,23 +104,26 @@ public class FileMerger extends Configured implements Tool {
   private static Path mergeTextFiles(String inputFiles, String outputFile, boolean deleteSource,
       boolean deleteDestinationFileIfExist) throws IOException {
     JobConf conf = new JobConf(FileMerger.class);
-    FileSystem fs = FileSystem.get(conf);
-
+    
+    // jld: prepare Filesystem objects corresponding to the URI scheme
     Path inputPath = new Path(inputFiles);
     Path outputPath = new Path(outputFile);
 
+    FileSystem ifs = inputPath.getFileSystem(conf);
+    FileSystem ofs = outputPath.getFileSystem(conf);
+    
     if (deleteDestinationFileIfExist) {
-      if (fs.exists(outputPath)) {
+      if (ofs.exists(outputPath)) {
         // carefully remove the destination file, not recursive
-        fs.delete(outputPath, false);
+        ofs.delete(outputPath, false);
         sLogger.info("Warning: remove destination file since it already exists...");
       }
     } else {
-      Preconditions.checkArgument(!fs.exists(outputPath), new IOException(
+      Preconditions.checkArgument(!ofs.exists(outputPath), new IOException(
           "Destination file already exists..."));
     }
 
-    FileUtil.copyMerge(fs, inputPath, fs, outputPath, deleteSource, conf, FILE_CONTENT_DELIMITER);
+    FileUtil.copyMerge(ifs, inputPath, ofs, outputPath, deleteSource, conf, FILE_CONTENT_DELIMITER);
     sLogger.info("Successfully merge " + inputPath.toString() + " to " + outputFile);
 
     return outputPath;
@@ -156,23 +159,27 @@ public class FileMerger extends Configured implements Tool {
       boolean deleteSource, boolean deleteDestinationFileIfExist) throws IOException,
       InstantiationException, IllegalAccessException {
     JobConf conf = new JobConf(FileMerger.class);
-    FileSystem fs = FileSystem.get(conf);
-
+    
+    // jld: prepare Filesystem objects corresponding to the URI scheme
     Path inputPath = new Path(inputFiles);
     Path outputPath = new Path(outputFile);
+    
+    FileSystem ifs = inputPath.getFileSystem(conf);
+    FileSystem ofs = outputPath.getFileSystem(conf);
+    
 
     if (deleteDestinationFileIfExist) {
-      if (fs.exists(outputPath)) {
+      if (ofs.exists(outputPath)) {
         // carefully remove the destination file, not recursive
-        fs.delete(outputPath, false);
+        ofs.delete(outputPath, false);
         sLogger.info("Warning: remove destination file since it already exists...");
       }
     } else {
-      Preconditions.checkArgument(!fs.exists(outputPath), new IOException(
+      Preconditions.checkArgument(!ofs.exists(outputPath), new IOException(
           "Destination file already exists..."));
     }
 
-    FileStatus[] fileStatuses = fs.globStatus(inputPath);
+    FileStatus[] fileStatuses = ifs.globStatus(inputPath);
     SequenceFile.Reader sequenceFileReader = null;
     SequenceFile.Writer sequenceFileWriter = null;
 
@@ -181,17 +188,17 @@ public class FileMerger extends Configured implements Tool {
     value = valueClass.newInstance();
 
     try {
-      sequenceFileWriter = new SequenceFile.Writer(fs, conf, outputPath, keyClass, valueClass);
+      sequenceFileWriter = new SequenceFile.Writer(ofs, conf, outputPath, keyClass, valueClass);
 
       for (FileStatus fileStatus : fileStatuses) {
-        sequenceFileReader = new SequenceFile.Reader(fs, fileStatus.getPath(), conf);
+        sequenceFileReader = new SequenceFile.Reader(ifs, fileStatus.getPath(), conf);
 
         while (sequenceFileReader.next(key, value)) {
           sequenceFileWriter.append(key, value);
         }
 
         if (deleteSource) {
-          fs.deleteOnExit(fileStatus.getPath());
+          ifs.deleteOnExit(fileStatus.getPath());
         }
       }
     } finally {
@@ -209,9 +216,16 @@ public class FileMerger extends Configured implements Tool {
       Class<? extends Writable> valueClass, Class<? extends FileInputFormat> fileInputClass,
       Class<? extends FileOutputFormat> fileOutputClass, boolean deleteSource,
       boolean deleteDestinationFileIfExist) throws IOException {
+    
     JobConf conf = new JobConf(FileMerger.class);
     conf.setJobName(FileMerger.class.getSimpleName());
-    FileSystem fs = FileSystem.get(conf);
+    
+ // jld: prepare Filesystem objects corresponding to the URI scheme
+    Path inputPath = new Path(inputFiles);
+    Path outputPath = new Path(outputFile);
+    
+    FileSystem ifs = inputPath.getFileSystem(conf);
+    FileSystem ofs = outputPath.getFileSystem(conf);
 
     sLogger.info("Tool: " + FileMerger.class.getSimpleName());
 
@@ -232,21 +246,21 @@ public class FileMerger extends Configured implements Tool {
     conf.setInputFormat(fileInputClass);
     conf.setOutputFormat(fileOutputClass);
 
-    Path inputPath = new Path(inputFiles);
+    //Path inputPath = new Path(inputFiles);
 
     Path mergePath = new Path(inputPath.getParent().toString() + Path.SEPARATOR + MERGE);
-    Preconditions.checkArgument(!fs.exists(mergePath), new IOException(
+    Preconditions.checkArgument(!ifs.exists(mergePath), new IOException(
         "Intermediate merge directory already exists..."));
 
-    Path outputPath = new Path(outputFile);
+    //Path outputPath = new Path(outputFile);
     if (deleteDestinationFileIfExist) {
-      if (fs.exists(outputPath)) {
+      if (ofs.exists(outputPath)) {
         // carefully remove the destination file, not recursive
-        fs.delete(outputPath, false);
+        ofs.delete(outputPath, false);
         sLogger.info("Warning: remove destination file since it already exists...");
       }
     } else {
-      Preconditions.checkArgument(!fs.exists(outputPath), new IOException(
+      Preconditions.checkArgument(!ofs.exists(outputPath), new IOException(
           "Destination file already exists..."));
     }
 
@@ -260,15 +274,15 @@ public class FileMerger extends Configured implements Tool {
       sLogger.info("Merge Finished in " + (System.currentTimeMillis() - startTime) / 1000.0
           + " seconds");
 
-      fs.rename(new Path(mergePath.toString() + Path.SEPARATOR + "part-00000"), outputPath);
+      ifs.rename(new Path(mergePath.toString() + Path.SEPARATOR + "part-00000"), outputPath);
 
       if (deleteSource) {
-        for (FileStatus fileStatus : fs.globStatus(inputPath)) {
-          fs.deleteOnExit(fileStatus.getPath());
+        for (FileStatus fileStatus : ifs.globStatus(inputPath)) {
+          ifs.deleteOnExit(fileStatus.getPath());
         }
       }
     } finally {
-      fs.delete(mergePath, true);
+      ifs.delete(mergePath, true);
     }
 
     sLogger.info("Successfully merge " + inputFiles.toString() + " to " + outputFile);
@@ -367,12 +381,19 @@ public class FileMerger extends Configured implements Tool {
     Class<? extends Writable> keyClass = LongWritable.class;
     Class<? extends Writable> valueClass = Text.class;
 
-    FileSystem fs = FileSystem.get(new Configuration());
+    // jld: prepare Filesystem object corresponding to the URI scheme
+    Path pinputPath = new Path(inputPath);
+    
+    FileSystem ifs = pinputPath.getFileSystem(new Configuration());
+
+    
+    //FileSystem fs = FileSystem.get(new Configuration());
+    
     if (!textFileFormat) {
-      FileStatus[] fileStatus = fs.globStatus(new Path(inputPath));
+      FileStatus[] fileStatus = ifs.globStatus(new Path(inputPath));
       Preconditions.checkArgument(fileStatus.length > 0, "Invalid input path...");
-      SequenceFile.Reader reader = new SequenceFile.Reader(fs,
-          fileStatus[fileStatus.length - 1].getPath(), fs.getConf());
+      SequenceFile.Reader reader = new SequenceFile.Reader(ifs,
+          fileStatus[fileStatus.length - 1].getPath(), ifs.getConf());
       try {
         keyClass = (Class<? extends Writable>) reader.getKeyClass();
         valueClass = (Class<? extends Writable>) reader.getValueClass();
