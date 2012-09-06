@@ -168,13 +168,16 @@ public class DemoCountClueWarcRecords extends Configured implements Tool {
 
 		conf.setMapperClass(MyMapper.class);
 
+		// jld: FileSystem URI...
 		// delete the output directory if it exists already
-		FileSystem.get(conf).delete(new Path(outputPath), true);
+		Path path=new Path(outputPath);
+		path.getFileSystem(conf).delete(path, true);
 
 		JobClient.runJob(conf);
 
 		// clean up
-		FileSystem.get(conf).delete(new Path(outputPath), true);
+		//FileSystem.get(conf).delete(new Path(outputPath), true);
+		path.getFileSystem(conf).delete(path, true);
 
 		return 0;
 	}

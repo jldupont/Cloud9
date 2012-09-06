@@ -64,8 +64,11 @@ public class DocumentForwardIndexHttpServer {
 			sLogger.info("port: " + port);
 			sLogger.info("forward index: " + indexFile);
 
-			FileSystem fs = FileSystem.get(conf);
-			FSDataInputStream in = fs.open(new Path(indexFile));
+			// jld: create FileSystem based on URI scheme
+			Path inputPath=new Path(indexFile);
+			FileSystem fs = inputPath.getFileSystem(conf);
+			
+			FSDataInputStream in = fs.open(inputPath);
 			String indexClass = in.readUTF();
 			in.close();
 
@@ -294,7 +297,6 @@ public class DocumentForwardIndexHttpServer {
 		sLogger.info(" - index file: " + indexFile);
 		sLogger.info(" - docno mapping data file: " + mappingFile);
 
-		FileSystem fs = FileSystem.get(conf);
 
 		Random rand = new Random();
 		int r = rand.nextInt();
@@ -302,6 +304,9 @@ public class DocumentForwardIndexHttpServer {
 		// this tmp file as a rendezvous point
 		Path tmpPath = new Path("/tmp/" + r);
 
+		// jld: create FileSystem based on URI scheme
+		FileSystem fs = tmpPath.getFileSystem(conf);
+		
 		if (fs.exists(tmpPath)) {
 			fs.delete(tmpPath, true);
 		}

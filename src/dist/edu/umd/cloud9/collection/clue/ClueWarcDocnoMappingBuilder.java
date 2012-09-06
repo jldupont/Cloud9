@@ -50,8 +50,11 @@ public class ClueWarcDocnoMappingBuilder extends Configured implements Tool, Doc
     LOG.info(" - input path: " + options.collection);
     LOG.info(" - output file: " + options.docnoMapping);
 
-    FileSystem fs = FileSystem.get(getConf());
-    FSDataOutputStream out = fs.create(new Path(options.docnoMapping), true);
+    // jld: FileSystem URI...
+    Path path=new Path(options.docnoMapping);
+    FileSystem fs = path.getFileSystem(getConf());
+    
+    FSDataOutputStream out = fs.create(path, true);
     final InputStream in = ClueWarcDocnoMapping.class.getResourceAsStream("docno.mapping");
     List<String> lines = CharStreams.readLines(CharStreams.newReaderSupplier(
         new InputSupplier<InputStream>() {

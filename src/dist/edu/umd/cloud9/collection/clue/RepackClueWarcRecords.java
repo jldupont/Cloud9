@@ -176,8 +176,10 @@ public class RepackClueWarcRecords extends Configured implements Tool {
 
 		conf.setMapperClass(MyMapper.class);
 
-		// delete the output directory if it exists already
-		FileSystem.get(conf).delete(new Path(outputPath), true);
+    // jld: FileSystem URI...
+    // delete the output directory if it exists already
+    Path path=new Path(outputPath);
+    path.getFileSystem(conf).delete(path, true);
 
 		JobClient.runJob(conf);
 

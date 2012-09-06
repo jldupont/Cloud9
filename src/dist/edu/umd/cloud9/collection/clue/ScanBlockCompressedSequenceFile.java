@@ -26,7 +26,10 @@ public class ScanBlockCompressedSequenceFile {
 
 		Path path = new Path(args[0]);
 		Configuration config = new Configuration();
-		SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.get(config), path, config);
+		
+		// jld: FileSystem URI...
+		FileSystem fs=path.getFileSystem(config);
+		SequenceFile.Reader reader = new SequenceFile.Reader(fs, path, config);
 
 		IntWritable key = new IntWritable();
 		ClueWarcRecord value = new ClueWarcRecord();

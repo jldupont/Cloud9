@@ -1,3 +1,6 @@
+/*
+ * jld: this class is broken... fs variable is never assigned...
+ */
 package edu.umd.cloud9.collection.clue;
 
 import java.io.IOException;

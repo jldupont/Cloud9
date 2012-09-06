@@ -97,7 +97,9 @@ public class DemoCountAquaint2Documents extends Configured implements Tool {
 		conf.setMapperClass(MyMapper.class);
 
 		// delete the output directory if it exists already
-		FileSystem.get(conf).delete(new Path(outputPath), true);
+		// jld: FileSystem based on URI
+		Path p=new Path(outputPath);
+		p.getFileSystem(conf).delete(new Path(outputPath), true);
 
 		JobClient.runJob(conf);
 

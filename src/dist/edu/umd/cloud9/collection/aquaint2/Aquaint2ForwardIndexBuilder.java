@@ -70,9 +70,11 @@ public class Aquaint2ForwardIndexBuilder extends Configured implements Tool {
 				// DistributedCache because it does not (currently) work in
 				// standalone mode...
 				if (job.get("mapred.job.tracker").equals("local")) {
-					FileSystem fs = FileSystem.get(job);
-					String mappingFile = job.get("DocnoMappingFile");
-					mDocMapping.loadMapping(new Path(mappingFile), fs);
+				  // jld: FileSystem based on URI
+				  String mappingFile = job.get("DocnoMappingFile");
+				  Path mPath=new Path(mappingFile);
+					FileSystem fs = mPath.getFileSystem(job); //FileSystem.get(job);				
+					mDocMapping.loadMapping(mPath, fs);
 				} else {
 					Path[] localFiles = DistributedCache.getLocalCacheFiles(job);
 					mDocMapping.loadMapping(localFiles[0], FileSystem.getLocal(job));
@@ -124,7 +126,8 @@ public class Aquaint2ForwardIndexBuilder extends Configured implements Tool {
 	public int runTool (Configuration config, String collectionPath, String outputPath, String indexFile, String mappingFile) throws Exception {
 		//sLogger.error ("getConf(): " + getConf() + ", DemoCountAquaint2Documents.class: " + DemoCountAquaint2Documents.class);
 		JobConf conf = new JobConf (config, DemoCountAquaint2Documents.class);
-		FileSystem fs = FileSystem.get (config);
+		
+		//FileSystem fs = FileSystem.get (config);
 
 		sLogger.info("Tool name: BuildAquaint2ForwardIndex");
 		sLogger.info(" - collection path: " + collectionPath);
@@ -165,9 +168,14 @@ public class Aquaint2ForwardIndexBuilder extends Configured implements Tool {
 		String inputFile = outputPath + "/" + "part-00000";
 
 		sLogger.info("Writing " + numDocs + " doc offseta to " + indexFile);
-		LineReader reader = new LineReader(fs.open(new Path(inputFile)));
+		// jld: FileSystem based on URI
+		Path iPath=new Path(inputFile);
+		FileSystem ifs=iPath.getFileSystem(conf);
+		LineReader reader = new LineReader(ifs.open(iPath));
 
-		FSDataOutputStream writer = fs.create(new Path(indexFile), true);
+    Path oPath=new Path(indexFile);
+    FileSystem ofs=iPath.getFileSystem(conf);
+		FSDataOutputStream writer = ofs.create(oPath, true);
 
 		writer.writeUTF("edu.umd.cloud9.collection.aquaint2.Aquaint2ForwardIndex");
 		writer.writeUTF(collectionPath);

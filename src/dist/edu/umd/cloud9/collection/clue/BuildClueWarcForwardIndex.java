@@ -109,7 +109,7 @@ public class BuildClueWarcForwardIndex extends Configured implements Tool {
 		}
 
 		JobConf conf = new JobConf(BuildClueWarcForwardIndex.class);
-		FileSystem fs = FileSystem.get(conf);
+		//FileSystem fs = FileSystem.get(conf);
 
 		String collectionPath = args[0];
 		String outputPath = args[1];
@@ -138,7 +138,10 @@ public class BuildClueWarcForwardIndex extends Configured implements Tool {
 		conf.setReducerClass(IdentityReducer.class);
 
 		// delete the output directory if it exists already
-		fs.delete(new Path(outputPath), true);
+		// jld: FileSystem based on URI
+		Path _oPath=new Path(outputPath);
+		FileSystem ofs=_oPath.getFileSystem(conf);
+		ofs.delete(_oPath, true);
 
 		RunningJob job = JobClient.runJob(conf);
 
@@ -148,8 +151,14 @@ public class BuildClueWarcForwardIndex extends Configured implements Tool {
 		sLogger.info("number of blocks: " + blocks);
 
 		sLogger.info("Writing index file...");
-		LineReader reader = new LineReader(fs.open(new Path(outputPath + "/part-00000")));
-		FSDataOutputStream out = fs.create(new Path(indexFile), true);
+		// jld: FileSystem URI...
+		Path oPath=new Path(outputPath + "/part-00000");
+
+		LineReader reader = new LineReader(ofs.open(oPath));
+		
+		Path indexPath=new Path(indexFile);
+		FileSystem indexFs=indexPath.getFileSystem(conf);
+		FSDataOutputStream out = indexFs.create(indexPath, true);
 
 		out.writeUTF("edu.umd.cloud9.collection.clue.ClueWarcForwardIndex");
 		out.writeUTF(collectionPath);

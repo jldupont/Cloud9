@@ -77,8 +77,10 @@ public class ClueWarcInputFormat extends FileInputFormat<LongWritable, ClueWarcR
     private long totalNumBytesRead = 0;
 
     public ClueWarcRecordReader(Configuration conf, FileSplit split) throws IOException {
-      FileSystem fs = FileSystem.get(conf);
+      
+      // jld: FileSystem URI...
       path = split.getPath();
+      FileSystem fs = path.getFileSystem(conf);
 
       CompressionCodecFactory compressionCodecs = new CompressionCodecFactory(conf);
       CompressionCodec compressionCodec = compressionCodecs.getCodec(path);

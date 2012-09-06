@@ -110,7 +110,12 @@ public class Aquaint2DocnoMappingBuilder extends Configured implements Tool {
     job.setReducerClass(MyReducer.class);
 
     // Delete the output directory if it exists already.
-    FileSystem.get(job.getConfiguration()).delete(new Path(outputPath), true);
+    // jld: grab FileSystem based on URI scheme
+    Path oPath=new Path(outputPath);
+    Configuration conf=job.getConfiguration();
+    FileSystem fs=oPath.getFileSystem(conf);
+    
+    fs.delete(new Path(outputPath), true);
 
     job.waitForCompletion(true);
 

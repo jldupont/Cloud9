@@ -122,8 +122,11 @@ public class Aquaint2DocnoMapping implements DocnoMapping {
       System.exit(-1);
     }
 
+    // jld: create FileSystem based on URI scheme
     Configuration conf = new Configuration();
-    FileSystem fs = FileSystem.get(conf);
+    Path inputPath=new Path(args[1]);
+    
+    FileSystem fs = inputPath.getFileSystem(conf);
 
     System.out.println("loading mapping file " + args[1]);
     Aquaint2DocnoMapping mapping = new Aquaint2DocnoMapping();
