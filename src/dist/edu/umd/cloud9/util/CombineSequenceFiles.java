@@ -69,7 +69,9 @@ public class CombineSequenceFiles  extends Configured implements Tool{
 		JobConf job = new JobConf(CombineSequenceFiles.class);
 		job.setJobName("CombineSequenceFiles");
 			
-		FileSystem.get(job).delete(new Path(outputPath), true);
+		// jld: FileSystem URI...
+		Path opath=new Path(outputPath);
+		opath.getFileSystem(job).delete(opath, true);
 		
 		FileStatus[] stat = FileSystem.get(job).listStatus(new Path(inputPath));
 		for (int i = 0; i < stat.length; ++i) {

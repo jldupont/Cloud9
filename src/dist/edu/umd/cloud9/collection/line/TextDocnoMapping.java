@@ -163,11 +163,14 @@ public class TextDocnoMapping implements DocnoMapping {
 		}
 
 		Configuration conf = new Configuration();
-		FileSystem fs = FileSystem.get(conf);
+		
+		// jld: FileSystem URI...
+		Path ipath=new Path(args[1]);
+		FileSystem fs = ipath.getFileSystem(conf);
 
 		System.out.println("loading mapping file " + args[1]);
 		TextDocnoMapping mapping = new TextDocnoMapping();
-		mapping.loadMapping(new Path(args[1]), fs);
+		mapping.loadMapping(ipath, fs);
 
 		if (args[0].equals("list")) {
 			for (int i = 1; i < mapping.mDocids.length; i++) {

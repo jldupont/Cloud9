@@ -135,7 +135,7 @@ public class BuildReverseWebGraph extends PowerTool {
 	public int runTool() throws Exception {
 
 		JobConf conf = new JobConf(getConf(), BuildReverseWebGraph.class);
-		FileSystem fs = FileSystem.get(conf);
+		//FileSystem fs = FileSystem.get(conf);
 		
 		int numMappers = conf.getInt("Cloud9.Mappers", 1);
 		int numReducers = conf.getInt("Cloud9.Reducers", 200);
@@ -172,7 +172,10 @@ public class BuildReverseWebGraph extends PowerTool {
 		LOG.info(" - input path: " + inputPath);
 		LOG.info(" - output path: " + outputPath);		
 
-		if(!fs.exists(new Path(outputPath))) {
+		// jld: FileSystem URI
+		Path opath=new Path(outputPath);
+		FileSystem fs=opath.getFileSystem(conf);
+		if(!fs.exists(opath)) {
 			JobClient.runJob(conf);
 		} else {
 			LOG.info(outputPath + " already exists! Skipping this step...");

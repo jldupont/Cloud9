@@ -133,7 +133,7 @@ public class BuildAnchorTextForwardIndex extends Configured implements Tool {
 		}
 
 	        JobConf conf = new JobConf(getConf());
-		FileSystem fs = FileSystem.get(conf);
+		//FileSystem fs = FileSystem.get(conf);
 
 		String collectionPath = args[0];
 		String outputPath = args[1];
@@ -164,7 +164,10 @@ public class BuildAnchorTextForwardIndex extends Configured implements Tool {
 		conf.setReducerClass(IdentityReducer.class);
 
 		// delete the output directory if it exists already
-		fs.delete(new Path(outputPath), true);
+		// jld: FileSystem URI
+		Path opath=new Path(outputPath);
+		FileSystem ofs=opath.getFileSystem(conf);
+		ofs.delete(opath, true);
 
 		RunningJob job = JobClient.runJob(conf);
 
@@ -174,8 +177,11 @@ public class BuildAnchorTextForwardIndex extends Configured implements Tool {
 		LOG.info("number of blocks: " + blocks);
 
 		LOG.info("Writing index file...");
-		LineReader reader = new LineReader(fs.open(new Path(outputPath + "/part-00000")));
-		FSDataOutputStream out = fs.create(new Path(indexFile), true);
+		LineReader reader = new LineReader(ofs.open(new Path(outputPath + "/part-00000")));
+		
+		Path indexpath=new Path(indexFile);
+		FileSystem ifs=indexpath.getFileSystem(conf);
+		FSDataOutputStream out = ifs.create(indexpath, true);
 
 		out.writeUTF(IndexableAnchorTextForwardIndex.class.getName());
 		out.writeUTF(collectionPath);

@@ -78,9 +78,12 @@ public class TrecForwardIndexBuilder extends Configured implements Tool {
         // DistributedCache because it does not (currently) work in
         // standalone mode...
         if (conf.get("mapred.job.tracker").equals("local")) {
-          FileSystem fs = FileSystem.get(conf);
+          // jld: FileSystem URI...
           String mappingFile = conf.get(DOCNO_MAPPING_FILE_PROPERTY);
-          docMapping.loadMapping(new Path(mappingFile), fs);
+          Path mpath=new Path(mappingFile);
+          FileSystem fs = mpath.getFileSystem(conf);
+          
+          docMapping.loadMapping(mpath, fs);
         } else {
           Path[] localFiles = DistributedCache.getLocalCacheFiles(conf);
           docMapping.loadMapping(localFiles[0], FileSystem.getLocal(conf));
@@ -147,7 +150,7 @@ public class TrecForwardIndexBuilder extends Configured implements Tool {
 
     Job job = new Job(getConf(), TrecForwardIndexBuilder.class.getSimpleName());
     job.setJarByClass(TrecForwardIndexBuilder.class);
-    FileSystem fs = FileSystem.get(getConf());
+    //FileSystem fs = FileSystem.get(getConf());
 
     LOG.info("Tool name: " + TrecForwardIndexBuilder.class.getSimpleName());
     LOG.info(" - collection path: " + collectionPath);
@@ -183,9 +186,14 @@ public class TrecForwardIndexBuilder extends Configured implements Tool {
     String inputFile = tmpDir + "/" + "part-r-00000";
 
     LOG.info("Writing " + numDocs + " doc offseta to " + indexFile);
-    LineReader reader = new LineReader(fs.open(new Path(inputFile)));
+    // jld: FileSystem URI
+    Path ipath=new Path(inputFile);
+    FileSystem ifs=ipath.getFileSystem(getConf());
+    LineReader reader = new LineReader(ifs.open(ipath));
 
-    FSDataOutputStream writer = fs.create(new Path(indexFile), true);
+    Path indexPath=new Path(indexFile);
+    FileSystem ofs=indexPath.getFileSystem(getConf());
+    FSDataOutputStream writer = ofs.create(indexPath, true);
 
     writer.writeUTF(edu.umd.cloud9.collection.trec.TrecForwardIndex.class.getCanonicalName());
     writer.writeUTF(collectionPath);
@@ -214,7 +222,10 @@ public class TrecForwardIndexBuilder extends Configured implements Tool {
       throw new RuntimeException("Unexpected number of documents in building forward index!");
     }
 
-    fs.delete(new Path(tmpDir), true);
+    // jld
+    Path tpath=new Path(tmpDir);
+    
+    tpath.getFileSystem(getConf()).delete(tpath, true);
 
     return 0;
   }

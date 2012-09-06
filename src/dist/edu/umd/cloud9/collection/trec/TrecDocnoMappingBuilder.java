@@ -106,7 +106,7 @@ public class TrecDocnoMappingBuilder extends Configured implements Tool, DocnoMa
     LOG.info(" - output file: " + options.docnoMapping);
 
     Job job = new Job(getConf(), TrecDocnoMappingBuilder.class.getSimpleName());
-    FileSystem fs = FileSystem.get(job.getConfiguration());
+    //FileSystem fs = FileSystem.get(job.getConfiguration());
 
     job.setJarByClass(TrecDocnoMappingBuilder.class);
 
@@ -125,7 +125,9 @@ public class TrecDocnoMappingBuilder extends Configured implements Tool, DocnoMa
     job.setReducerClass(MyReducer.class);
 
     // Delete the output directory if it exists already.
-    fs.delete(new Path(tmpDir), true);
+    Path tpath=new Path(tmpDir);
+    FileSystem fs=tpath.getFileSystem(job.getConfiguration());
+    fs.delete(tpath, true);
 
     try {
       job.waitForCompletion(true);
@@ -135,7 +137,8 @@ public class TrecDocnoMappingBuilder extends Configured implements Tool, DocnoMa
 
     String input = tmpDir + (tmpDir.endsWith("/") ? "" : "/") + "/part-r-00000";
     TrecDocnoMapping.writeMappingData(new Path(input), new Path(options.docnoMapping),
-        FileSystem.get(getConf()));
+        fs);
+        //FileSystem.get(getConf()));
 
     fs.delete(new Path(tmpDir), true);
 

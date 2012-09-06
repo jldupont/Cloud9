@@ -43,8 +43,8 @@ public class HSymAlign {
 				throw new IOException("Excepted transpose field to be 0 or 1");
 			Path p = new Path(toks[1]);
 			org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
-			FileSystem fileSys = FileSystem.get(conf);
-			BufferedReader giza = new BufferedReader(new InputStreamReader(fileSys.open(p), "UTF8"));
+			//FileSystem fileSys = FileSystem.get(conf);
+			BufferedReader giza = new BufferedReader(new InputStreamReader(p.getFileSystem(conf).open(p), "UTF8"));
 			int lc = 0;
 			String comment;
 			while ((comment = giza.readLine()) != null) {

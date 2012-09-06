@@ -107,7 +107,8 @@ public class ClueExtractLinks extends PowerTool {
       }
 
       try {
-        docnoMapping.loadMapping(localFiles[0], FileSystem.getLocal(job));
+        Path lpath=localFiles[0];
+        docnoMapping.loadMapping(lpath, lpath.getFileSystem(job));
       } catch (Exception e) {
         e.printStackTrace();
         throw new RuntimeException("Error initializing DocnoMapping!");
@@ -308,7 +309,7 @@ public class ClueExtractLinks extends PowerTool {
   public int runTool() throws Exception {
 
     JobConf conf = new JobConf(getConf(), ClueExtractLinks.class);
-    FileSystem fs = FileSystem.get(conf);
+
 
     int numMappers = conf.getInt("Cloud9.Mappers", 1);
     int numReducers = conf.getInt("Cloud9.Reducers", 200);
@@ -317,6 +318,10 @@ public class ClueExtractLinks extends PowerTool {
     String outputPath = conf.get("Cloud9.OutputPath");
     String mappingFile = conf.get("Cloud9.DocnoMappingFile");
 
+    // jld: FileSystem URI
+    Path opath=new Path(outputPath);
+    FileSystem fs=opath.getFileSystem(conf);
+    
     if (!fs.exists(new Path(mappingFile)))
       throw new RuntimeException("Error: Docno mapping data file " + mappingFile
           + " doesn't exist!");
@@ -353,6 +358,7 @@ public class ClueExtractLinks extends PowerTool {
     LOG.info(" - mapping file: " + mappingFile);
     LOG.info(" - include internal links? " + conf.getBoolean("Cloud9.IncludeInternalLinks", false));
 
+    
     if (!fs.exists(new Path(outputPath))) {
       JobClient.runJob(conf);
     } else {

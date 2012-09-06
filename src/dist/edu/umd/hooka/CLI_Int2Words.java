@@ -23,7 +23,8 @@ public class CLI_Int2Words {
 		try {
 			Path pve = new Path(args[0]);
 			org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
-			FileSystem fileSys = FileSystem.get(conf);
+			// jld: FileSystem URI...
+			FileSystem fileSys = pve.getFileSystem(conf);
 
 			DataInputStream dis = new DataInputStream(new BufferedInputStream(fileSys.open(pve)));
 			VocabularyWritable v = new VocabularyWritable();

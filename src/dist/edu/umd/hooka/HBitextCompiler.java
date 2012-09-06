@@ -53,21 +53,23 @@ public class HBitextCompiler {
 			Path pmd = new Path(outputBase + ".metadata");
 			
 			org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
-			FileSystem fileSys = FileSystem.get(conf);
+			
+			// jld
+			FileSystem ofileSys = output.getFileSystem(conf);
 			
 			VocabularyWritable vocE = new VocabularyWritable();
 			VocabularyWritable vocF = new VocabularyWritable();
 			org.apache.hadoop.io.SequenceFile.Writer sfw = 
-				SequenceFile.createWriter(fileSys, conf, output, IntWritable.class, PhrasePair.class);
+				SequenceFile.createWriter(ofileSys, conf, output, IntWritable.class, PhrasePair.class);
 
 			//if (true) throw new RuntimeException("here " + pe + " " + pf + " " + pa);
 			
 			boolean hasAlignment = (pa != null);
-			BufferedReader rde = new BufferedReader(new InputStreamReader(fileSys.open(pe), "UTF8"));
-			BufferedReader rdf = new BufferedReader(new InputStreamReader(fileSys.open(pf), "UTF8"));
+			BufferedReader rde = new BufferedReader(new InputStreamReader(pe.getFileSystem(conf).open(pe), "UTF8"));
+			BufferedReader rdf = new BufferedReader(new InputStreamReader(pf.getFileSystem(conf).open(pf), "UTF8"));
 			BufferedReader rda = null;
 			if (hasAlignment)
-				rda = new BufferedReader(new InputStreamReader(fileSys.open(pa), "UTF8"));
+				rda = new BufferedReader(new InputStreamReader(pa.getFileSystem(conf).open(pa), "UTF8"));
 			String es;
 			IntWritable lci = new IntWritable(0);
 			int lc = 0;
@@ -104,15 +106,15 @@ public class HBitextCompiler {
 			}
 			sfw.close();
 			Path pve = new Path(outputBase + ".voc.e");
-			DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(fileSys.create(pve)));
+			DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(pve.getFileSystem(conf).create(pve)));
 			vocE.write(dos);
 			dos.close();
 			Path pvf = new Path(outputBase + ".voc.f");
-			dos = new DataOutputStream(new BufferedOutputStream(fileSys.create(pvf)));
+			dos = new DataOutputStream(new BufferedOutputStream(pvf.getFileSystem(conf).create(pvf)));
 			vocF.write(dos);
 			dos.close();
 			Metadata theMetadata = new Metadata(lc, vocE.size(), vocF.size());
-			ObjectOutputStream mdstream = new ObjectOutputStream(new BufferedOutputStream(fileSys.create(pmd)));
+			ObjectOutputStream mdstream = new ObjectOutputStream(new BufferedOutputStream(pmd.getFileSystem(conf).create(pmd)));
 			mdstream.writeObject(theMetadata);
 			mdstream.close();
 			oc.collect(new LongWritable(0), new Text("done"));
@@ -137,8 +139,9 @@ public class HBitextCompiler {
 		conf.setNumReduceTasks(0);
 		FileInputFormat.setInputPaths(conf, new Path("dummy"));
 		try {
-			FileSystem.get(conf).delete(new Path("dummy.out"));
-			FileOutputFormat.setOutputPath(conf, new Path("dummy.out"));
+		  Path dpath=new Path("dummy.out");
+			dpath.getFileSystem(conf).delete(dpath);
+			FileOutputFormat.setOutputPath(conf, dpath);
 			conf.setOutputFormat(SequenceFileOutputFormat.class);
 			JobClient.runJob(conf);
 		} catch (IOException e) {

@@ -167,12 +167,14 @@ public class TrecDocnoMapping implements DocnoMapping {
       System.exit(-1);
     }
 
+    // jld: FileSystem URI...
     Configuration conf = new Configuration();
-    FileSystem fs = FileSystem.get(conf);
+    Path path=new Path(args[1]);
+    FileSystem fs = path.getFileSystem(conf);
 
     System.out.println("loading mapping file " + args[1]);
     TrecDocnoMapping mapping = new TrecDocnoMapping();
-    mapping.loadMapping(new Path(args[1]), fs);
+    mapping.loadMapping(path, fs);
 
     if (args[0].equals("list")) {
       for (int i = 1; i < mapping.docids.length; i++) {

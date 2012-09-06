@@ -17,7 +17,7 @@ public class CreateMetadata {
 	{
 		System.out.println(bitextPath.toString());
 		JobConf conf = new JobConf(CreateMetadata.class);
-		FileSystem fileSys = FileSystem.get(conf);
+		//FileSystem fileSys = FileSystem.get(conf);
 		//SequenceFile.Reader[] x = SequenceFileOutputFormat.getReaders(conf, bitextPath);
 		SequenceFile.Reader[] x = SequenceFileOutputFormat.getReaders(conf, new Path("/shared/bitexts/ar-en.ldc.10k/ar-en.10k.bitext"));
 		WritableComparable key = new IntWritable();

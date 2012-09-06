@@ -136,12 +136,18 @@ public class NumberTextDocuments extends Configured implements Tool {
 		conf.setReducerClass(MyReducer.class);
 
 		// delete the output directory if it exists already
-		FileSystem.get(conf).delete(new Path(outputPath), true);
+		// jld: FileSystem URI...
+		Path path=new Path(outputPath);
+		FileSystem fs=path.getFileSystem(conf);
+		fs.delete(path, true);
 
 		JobClient.runJob(conf);
 
 		String input = outputPath + (outputPath.endsWith("/") ? "" : "/") + "/part-00000";
-		TextDocnoMapping.writeDocnoData(input, outputFile, FileSystem.get(getConf()));
+		
+		Path opath=new Path(outputFile);
+		FileSystem ofs=opath.getFileSystem(getConf());
+		TextDocnoMapping.writeDocnoData(input, outputFile, ofs);
 
 		return 0;
 	}

@@ -59,8 +59,11 @@ public class PackTextFile {
 
 		JobConf config = new JobConf();
 
-		SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(config), config,
-				new Path(outFile), LongWritable.class, Text.class);
+		// jld: FileSystem URI...
+		Path oPath=new Path(outFile);
+		FileSystem ofs=oPath.getFileSystem(config);
+		SequenceFile.Writer writer = SequenceFile.createWriter(ofs, config,
+				oPath, LongWritable.class, Text.class);
 
 		BufferedReader reader = new BufferedReader(new FileReader(new File(inFile)));
 

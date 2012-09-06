@@ -127,14 +127,19 @@ public class TrecForwardIndex implements DocumentForwardIndex<TrecDocument> {
       System.exit(-1);
     }
 
+    // jld: FileSystem API
+    // jld: assume same fs for both in & out
     Configuration conf = new Configuration();
-    FileSystem fs = FileSystem.get(conf);
+    //FileSystem fs = FileSystem.get(conf);
+    Path ipath=new Path(args[0]);
+    Path opath=new Path(args[1]);
+    FileSystem fs = ipath.getFileSystem(conf);
 
     System.out.println("forward index: " + args[0]);
     System.out.println("mapping file: " + args[1]);
 
     TrecForwardIndex findex = new TrecForwardIndex();
-    findex.loadIndex(new Path(args[0]), new Path(args[1]), fs);
+    findex.loadIndex(ipath, opath, fs);
 
     if (args[2].equals("getDocno")) {
       System.out.println("looking up docno " + args[3]);

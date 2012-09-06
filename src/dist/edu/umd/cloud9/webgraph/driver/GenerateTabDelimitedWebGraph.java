@@ -102,7 +102,7 @@ public class GenerateTabDelimitedWebGraph extends Configured implements Tool {
 		}
 		
 		JobConf conf = new JobConf(getConf(), GenerateTabDelimitedWebGraph.class);
-		FileSystem fs = FileSystem.get(conf);
+		//FileSystem fs = FileSystem.get(conf);
 
 		String inPath = args[0];
 		String outPath = args[1];
@@ -110,8 +110,10 @@ public class GenerateTabDelimitedWebGraph extends Configured implements Tool {
 		Path inputPath = new Path(inPath);
 		Path outputPath = new Path(outPath);
 
-		if (fs.exists(outputPath))
-			fs.delete(outputPath);
+		// jld: FileSystem URI...
+		FileSystem ofs= outputPath.getFileSystem(conf);
+		if (ofs.exists(outputPath))
+			ofs.delete(outputPath);
 
 		conf.setJobName("TabDelimWebGraph");
 

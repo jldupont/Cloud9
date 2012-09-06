@@ -169,7 +169,7 @@ public class CollectHostnames extends PowerTool {
 	public int runTool() throws Exception {
 
 		JobConf conf = new JobConf(getConf(), CollectHostnames.class);
-		FileSystem fs = FileSystem.get(conf);
+		//FileSystem fs = FileSystem.get(conf);
 		
 		int numMappers = conf.getInt("Cloud9.Mappers", 1);
 		int numReducers = conf.getInt("Cloud9.Reducers", 200);
@@ -207,6 +207,10 @@ public class CollectHostnames extends PowerTool {
 		sLogger.info(" - input path: " + inputPath);
 		sLogger.info(" - output path: " + outputPath);		
 
+    // jld: FileSystem URI
+    Path opath=new Path(outputPath);
+    FileSystem fs=opath.getFileSystem(conf);
+		
 		if(!fs.exists(new Path(outputPath))) {
 			JobClient.runJob(conf);
 		} else {

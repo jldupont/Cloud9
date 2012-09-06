@@ -89,7 +89,7 @@ public class SortWebGraph extends Configured implements Tool {
 		}
 
 		JobConf conf = new JobConf(getConf(), SortWebGraph.class);
-		FileSystem fs = FileSystem.get(conf);
+		//FileSystem fs = FileSystem.get(conf);
 		
 		String inputPath = args[0];
 		String outputPath = args[1];
@@ -133,7 +133,8 @@ public class SortWebGraph extends Configured implements Tool {
 		LOG.info(" - output path: " + outputPath);	
 		LOG.info(" - number of documents: " + conf.getInt("Cloud9.NumberOfDocuments", DEFAULT_NUMBER_OF_DOCUMENTS));
 
-		fs.delete(new Path(outputPath));
+		Path opath=new Path(outputPath);
+		opath.getFileSystem(conf).delete(opath);
 		JobClient.runJob(conf);
 
 		return 0;

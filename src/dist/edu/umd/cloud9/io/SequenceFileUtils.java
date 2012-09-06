@@ -39,9 +39,10 @@ public class SequenceFileUtils {
 	private SequenceFileUtils() {}
 
 	public static <K extends Writable, V extends Writable> List<PairOfWritables<K, V>> readFile(Path path) {
+	  // jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}
@@ -50,9 +51,10 @@ public class SequenceFileUtils {
 	}
 
 	public static <K extends Writable, V extends Writable> List<PairOfWritables<K, V>> readFile(Path path, int max) {
+	  // jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}
@@ -101,9 +103,10 @@ public class SequenceFileUtils {
 	}
 
 	public static <K extends Writable, V extends Writable> SortedMap<K, V> readFileIntoMap(Path path) {
+	  //  jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}
@@ -112,9 +115,10 @@ public class SequenceFileUtils {
 	}
 
 	public static <K extends Writable, V extends Writable> SortedMap<K, V> readFileIntoMap(Path path, int max) {
+	  //  jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}
@@ -176,9 +180,10 @@ public class SequenceFileUtils {
 	}
 
 	public static <K extends Writable> List<K> readKeys(Path path) {
+	  //  jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}
@@ -187,9 +192,10 @@ public class SequenceFileUtils {
 	}
 
 	public static <K extends Writable> List<K> readKeys(Path path, int max) {
+	  //  jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}
@@ -229,9 +235,10 @@ public class SequenceFileUtils {
 	}
 
 	public static <V extends Writable> List<V> readValues(Path path) {
+	  //  jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}
@@ -240,9 +247,10 @@ public class SequenceFileUtils {
 	}
 
 	public static <V extends Writable> List<V> readValues(Path path, int max) {
+	  //  jld: FileSystem URI...
 		FileSystem fs;
 		try {
-			fs = FileSystem.get(new Configuration());
+			fs = path.getFileSystem(new Configuration());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to access the file system!");
 		}

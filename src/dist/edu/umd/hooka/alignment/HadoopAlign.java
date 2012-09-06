@@ -65,9 +65,9 @@ public class HadoopAlign {
 
 	static public ATable loadATable(Path path, Configuration job) throws IOException {
 		org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration(job);
-		FileSystem fileSys = FileSystem.get(conf);
+		//FileSystem fileSys = FileSystem.get(conf);
 
-		DataInput in = new DataInputStream(new BufferedInputStream(fileSys.open(path)));
+		DataInput in = new DataInputStream(new BufferedInputStream(path.getFileSystem(conf).open(path)));
 		ATable at = new ATable();
 		at.readFields(in);
 
@@ -76,9 +76,9 @@ public class HadoopAlign {
 
 	static public Vocab loadVocab(Path path, Configuration job) throws IOException {
 		org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration(job);
-		FileSystem fileSys = FileSystem.get(conf);
+		//FileSystem fileSys = FileSystem.get(conf);
 
-		DataInput in = new DataInputStream(new BufferedInputStream(fileSys.open(path)));
+		DataInput in = new DataInputStream(new BufferedInputStream(path.getFileSystem(conf).open(path)));
 		VocabularyWritable at = new VocabularyWritable();
 		at.readFields(in);
 
@@ -420,14 +420,16 @@ public class HadoopAlign {
 			outputPath = new Path(job.get(TTABLE_ITERATION_OUTPUT));
 			IntWritable k = new IntWritable();
 			PartialCountContainer t = new PartialCountContainer();
-			FileSystem fileSys = FileSystem.get(xjob);
+			//FileSystem fileSys = FileSystem.get(xjob);
 			// the following is a race condition
-			fileSys.delete(outputPath.suffix("/_logs"), true);
+			Path p=outputPath.suffix("/_logs");
+			p.getFileSystem(xjob).delete(p, true);
 //			sLogger.debug("Reading from "+outputPath);
 			SequenceFile.Reader[] readers =
 				SequenceFileOutputFormat.getReaders(xjob, outputPath);
 			FileReaderZip z = new FileReaderZip(readers);
-			TTable tt = new TTable_monolithic_IFAs(fileSys, ttablePath, false);
+			
+			TTable tt = new TTable_monolithic_IFAs(ttablePath.getFileSystem(xjob), ttablePath, false);
 			boolean emittedATable = false;
 			while (z.next(k,t)) {
 				if (t.getType() == PartialCountContainer.CONTENT_ARRAY) {
@@ -439,15 +441,16 @@ public class HadoopAlign {
 					if (emittedATable)
 						throw new RuntimeException("Should only have a single ATable!");
 					ATable at = (ATable)t.getContent();
-					fileSys.delete(atablePath, true);
+					
+					atablePath.getFileSystem(xjob).delete(atablePath, true);
 					DataOutputStream dos = new DataOutputStream(
-							new BufferedOutputStream(fileSys.create(atablePath)));
+							new BufferedOutputStream(atablePath.getFileSystem(xjob).create(atablePath)));
 					at.write(dos);
 					dos.close();
 					emittedATable = true;
 				}
 			}
-			fileSys.delete(ttablePath, true); // delete old ttable
+			atablePath.getFileSystem(xjob).delete(ttablePath, true); // delete old ttable
 			tt.write();  // write new one to same location
 		}
 	}
@@ -473,13 +476,15 @@ public class HadoopAlign {
 				Reporter reporter) throws IOException {
 			IntWritable k = new IntWritable();
 			PartialCountContainer t = new PartialCountContainer();
-			FileSystem fileSys = FileSystem.get(xjob);
+			//FileSystem fileSys = FileSystem.get(xjob);
 			// the following is a race condition
-			fileSys.delete(outputPath.suffix("/_logs"), true);
+			// jld
+			outputPath.getFileSystem(xjob).delete(outputPath.suffix("/_logs"), true);
 			SequenceFile.Reader[] readers =
 				SequenceFileOutputFormat.getReaders(xjob, outputPath);
 			FileReaderZip z = new FileReaderZip(readers);
-			TTable tt = new TTable_monolithic_IFAs(fileSys, ttablePath, false);
+			
+			TTable tt = new TTable_monolithic_IFAs(ttablePath.getFileSystem(xjob), ttablePath, false);
 			boolean emittedATable = false;
 			while (z.next(k,t)) {
 				if (t.getType() == PartialCountContainer.CONTENT_ARRAY) {
@@ -491,15 +496,16 @@ public class HadoopAlign {
 					if (emittedATable)
 						throw new RuntimeException("Should only have a single ATable!");
 					ATable at = (ATable)t.getContent();
-					fileSys.delete(atablePath, true);
+					
+					atablePath.getFileSystem(xjob).delete(atablePath, true);
 					DataOutputStream dos = new DataOutputStream(
-							new BufferedOutputStream(fileSys.create(atablePath)));
+							new BufferedOutputStream(atablePath.getFileSystem(xjob).create(atablePath)));
 					at.write(dos);
 					dos.close();
 					emittedATable = true;
 				}
 			}
-			fileSys.delete(ttablePath, true); // delete old ttable
+			ttablePath.getFileSystem(xjob).delete(ttablePath, true); // delete old ttable
 			tt.write();  // write new one to same location
 			output.collect(key, value);
 		}
@@ -520,7 +526,9 @@ public class HadoopAlign {
 
 	static String startPServers(HadoopAlignConfig hac) throws IOException {
 		int port = 4444;
-		pserver = new PServer(4444, FileSystem.get(hac), hac.getTTablePath());
+		
+		FileSystem fs=hac.getTTablePath().getFileSystem(hac);
+		pserver = new PServer(4444, fs, hac.getTTablePath());
 		Thread th = new Thread(pserver);
 		th.start();
 		if (true) throw new RuntimeException("Shouldn't use PServer");
@@ -534,10 +542,10 @@ public class HadoopAlign {
 	@SuppressWarnings("deprecation")
 	public static void doAlignment(int mapTasks, int reduceTasks, HadoopAlignConfig hac) throws IOException {
 		System.out.println("Running alignment: " + hac);
-		FileSystem fs = FileSystem.get(hac);
+		//FileSystem fs = FileSystem.get(hac);
 		Path cbtxt = new Path(hac.getRoot()+"/comp-bitext");
 		//		fs.delete(cbtxt, true);
-		if (!fs.exists(cbtxt)) {
+		if (!cbtxt.getFileSystem(hac).exists(cbtxt)) {
 			CorpusVocabNormalizerAndNumberizer.preprocessAndNumberizeFiles(hac, hac.getBitexts(), cbtxt);
 		}
 		System.out.println("Finished preprocessing");

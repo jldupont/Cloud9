@@ -98,7 +98,8 @@ public class ClueWebAnchorTextForwardIndexHttpServer {
 			LOG.info("port: " + port);
 			LOG.info("forward index: " + indexFile);
 
-			FSDataInputStream in = FileSystem.get(conf).open(new Path(indexFile));
+			Path indexpath=new Path(indexFile);
+			FSDataInputStream in = indexpath.getFileSystem(conf).open(indexpath);
 			String indexClass = in.readUTF();
 			in.close();
 
@@ -424,16 +425,18 @@ public class ClueWebAnchorTextForwardIndexHttpServer {
 		LOG.info(" - docno mapping data file: " + mappingFile);
 		LOG.info(" - ClueWeb09 index root:" + clueIndexRoot);
 
-		FileSystem fs = FileSystem.get(conf);
+		//FileSystem fs = FileSystem.get(conf);
 
 		Random rand = new Random();
 		int r = rand.nextInt();
 		
 		// this tmp file as a rendezvous point
+		// jld: FileSystem URI
 		Path tmpPath = new Path("/tmp/" + r);
 
-		if (fs.exists(tmpPath)) {
-			fs.delete(tmpPath, true);
+		FileSystem tfs=tmpPath.getFileSystem(conf);
+		if (tfs.exists(tmpPath)) {
+			tfs.delete(tmpPath, true);
 		}
 
 		JobConf job = new JobConf(conf, ClueWebAnchorTextForwardIndexHttpServer.class);
@@ -459,12 +462,12 @@ public class ClueWebAnchorTextForwardIndexHttpServer {
 
 		LOG.info("Waiting for server to start up...");
 
-		while (!fs.exists(tmpPath)) {
+		while (!tfs.exists(tmpPath)) {
 			Thread.sleep(50000);
 			LOG.info("...");
 		}
 
-		FSDataInputStream in = fs.open(tmpPath);
+		FSDataInputStream in = tfs.open(tmpPath);
 		String host = in.readUTF();
 		in.close();
 

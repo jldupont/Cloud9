@@ -147,8 +147,9 @@ public class TrecExtractLinks extends PowerTool
 
         try
         {
+          // jld: FileSystem URI...
           docnoMapping.loadMapping(docnoMappingPath,
-              FileSystem.getLocal(conf));
+              docnoMappingPath.getFileSystem(conf));
         }
         catch (Exception e)
         {
@@ -451,8 +452,11 @@ public class TrecExtractLinks extends PowerTool
 
     String mappingFile = conf.get("Cloud9.DocnoMappingFile");
 
-    FileSystem fs = FileSystem.get(conf);
-    if (!fs.exists(new Path(mappingFile)))
+    // jld: FileSystem URI...
+    Path mpath=new Path(mappingFile);
+    FileSystem fs=mpath.getFileSystem(conf);
+    
+    if (!fs.exists(mpath))
     {
       throw new RuntimeException("Error: Docno mapping data file "
           + mappingFile + " doesn't exist!");

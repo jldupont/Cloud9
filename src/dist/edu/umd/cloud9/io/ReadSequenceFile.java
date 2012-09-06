@@ -65,8 +65,10 @@ public class ReadSequenceFile {
 			System.out.println("Reading from local filesystem");
 		}
 
-		FileSystem fs = useLocal? FileSystem.getLocal(new Configuration()) : FileSystem.get(new Configuration());
+		// jld: FileSystem URI...
 		Path p = new Path(f);
+		FileSystem fs = useLocal? FileSystem.getLocal(new Configuration()) : p.getFileSystem(new Configuration());
+		
 
 		if (fs.getFileStatus(p).isDir()) {
 			readSequenceFilesInDir(p, fs, max);

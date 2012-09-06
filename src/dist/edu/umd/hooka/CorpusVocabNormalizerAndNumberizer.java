@@ -107,12 +107,19 @@ public class CorpusVocabNormalizerAndNumberizer {
 
 			//write out vocabulary to file
 			try {
-				FileSystem fs = FileSystem.get(job_);
+				//FileSystem fs = FileSystem.get(job_);
 
-				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(fs.create(new Path(job_.get("root",null)+"/vocab.E"))));
+			  Path path1=new Path(job_.get("root",null)+"/vocab.E");
+			  FileSystem fs1=path1.getFileSystem(job_);
+			  
+				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(fs1.create(path1)));
 				((VocabularyWritable) vocE).write(dos);
 				dos.close();
-				DataOutputStream dos2 = new DataOutputStream(new BufferedOutputStream(fs.create(new Path(job_.get("root",null)+"/vocab.F"))));
+
+        Path path2=new Path(job_.get("root",null)+"/vocab.F");
+        FileSystem fs2=path1.getFileSystem(job_);
+				
+				DataOutputStream dos2 = new DataOutputStream(new BufferedOutputStream(fs2.create(path2)));
 				((VocabularyWritable) vocF).write(dos2);
 				dos2.close();
 				
@@ -194,7 +201,8 @@ public class CorpusVocabNormalizerAndNumberizer {
 			reporter.setStatus(genericSplit.toString());
 			FileSplit split = (FileSplit)genericSplit;
 			final Path file = split.getPath();
-			FileSystem fs = file.getFileSystem(job);
+			// jld: FileSystem URI...
+			FileSystem fs = split.getPath().getFileSystem(job);
 			FSDataInputStream fileIn = fs.open(split.getPath());
 			if (compressionCodecs != null && compressionCodecs.getCodec(file) != null)
 				throw new RuntimeException("Not handling compression!");

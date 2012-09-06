@@ -125,7 +125,7 @@ public class MedlineDocnoMappingBuilder extends Configured implements Tool, Docn
     LOG.info(" - output file: " + options.docnoMapping);
 
     Job job = new Job(getConf(), MedlineDocnoMappingBuilder.class.getSimpleName());
-    FileSystem fs = FileSystem.get(job.getConfiguration());
+    //FileSystem fs = FileSystem.get(job.getConfiguration());
 
     job.setJarByClass(MedlineDocnoMappingBuilder.class);
 
@@ -144,7 +144,9 @@ public class MedlineDocnoMappingBuilder extends Configured implements Tool, Docn
     job.setReducerClass(MyReducer.class);
 
     // Delete the output directory if it exists already.
-    fs.delete(new Path(tmpDir), true);
+    Path tpath=new Path(tmpDir);
+    FileSystem fs = tpath.getFileSystem(job.getConfiguration());
+    fs.delete(tpath, true);
 
     try {
       job.waitForCompletion(true);
@@ -153,8 +155,10 @@ public class MedlineDocnoMappingBuilder extends Configured implements Tool, Docn
     }
 
     String input = tmpDir + (tmpDir.endsWith("/") ? "" : "/") + "/part-r-00000";
+    // jld: assume same fs for both input and output
     MedlineDocnoMapping.writeMappingData(new Path(input), new Path(options.docnoMapping),
-        FileSystem.get(getConf()));
+        fs);
+        //FileSystem.get(getConf()));
 
     fs.delete(new Path(tmpDir), true);
 

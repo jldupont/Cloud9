@@ -46,9 +46,9 @@ public class M1ViterbiExtract {
 
 	static protected TTable loadTTable(Path path) throws IOException {
 		org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
-		FileSystem fileSys = FileSystem.get(conf);
+		//FileSystem fileSys = FileSystem.get(conf);
 	
-		DataInput in = new DataInputStream(new BufferedInputStream(fileSys.open(path)));
+		DataInput in = new DataInputStream(new BufferedInputStream(path.getFileSystem(conf).open(path)));
 		TTable_monolithic_IFAs tt = new TTable_monolithic_IFAs();
 		tt.readFields(in);
 		

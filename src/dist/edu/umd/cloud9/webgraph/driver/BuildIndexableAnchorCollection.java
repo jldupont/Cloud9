@@ -121,7 +121,7 @@ public class BuildIndexableAnchorCollection extends Configured implements Tool {
     }
 
     JobConf conf = new JobConf(getConf());
-    FileSystem fs = FileSystem.get(conf);
+    //FileSystem fs = FileSystem.get(conf);
 
     String collectionPath = DriverUtil.argValue(args, DriverUtil.CL_INPUT);
     String outputPath = DriverUtil.argValue(args, DriverUtil.CL_OUTPUT);
@@ -164,7 +164,9 @@ public class BuildIndexableAnchorCollection extends Configured implements Tool {
     conf.setReducerClass(IdentityReducer.class);
 
     // delete the output directory if it exists already
-    fs.delete(new Path(outputPath), true);
+    // jld: FileSystem URI
+    Path opath=new Path(outputPath);
+    opath.getFileSystem(conf).delete(opath, true);
     RunningJob job = JobClient.runJob(conf);
 
     return 0;

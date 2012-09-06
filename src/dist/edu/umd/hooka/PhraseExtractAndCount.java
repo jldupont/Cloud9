@@ -175,7 +175,7 @@ public class PhraseExtractAndCount {
 		int reduceTasks = 38;
 
 		JobConf conf = new JobConf(PhraseExtractAndCount.class);
-		FileSystem fs = FileSystem.get(conf);
+		FileSystem fs = ppCountTemp.getFileSystem(conf);
 		
 		fs.delete(ppCountTemp);
 		fs.delete(ppMarginalTemp);

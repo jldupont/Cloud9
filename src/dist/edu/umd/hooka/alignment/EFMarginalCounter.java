@@ -150,10 +150,11 @@ public class EFMarginalCounter {
 		
 	public static void main(String[] args) throws IOException {
 		JobConf conf = new JobConf(EFMarginalCounter.class);
-		FileSystem fileSys = FileSystem.get(conf);
+		// jld
+		//FileSystem fileSys = FileSystem.get(conf);
 		String sOutputPath="marginals";
 		Path outputPath = new Path(sOutputPath);
-		fileSys.delete(outputPath);
+		outputPath.getFileSystem(conf).delete(outputPath);
 		computeMarginals(corpus.getBitext(), outputPath, 38);
 	}
 	
